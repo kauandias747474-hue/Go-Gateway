@@ -1,1 +1,6 @@
-
+{
+  "services": [
+    {"path": "/api", "target": "http://java-engine:8080"},
+    {"path": "/web", "target": "http://php-core:80"}
+  ]
+}
