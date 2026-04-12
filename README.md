@@ -1,4 +1,4 @@
-# Go-Gateway: High-Availability Traffic Orchestrator
+# Go-Gateway Traffic Orchestrator
 
 <div align="center">
 
