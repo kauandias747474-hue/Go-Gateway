@@ -1,1 +1,55 @@
+version: '3.8'
 
+services:
+  # 1. O ESCUDO (GO) - Único com portas expostas
+  gateway:
+    build: ./go-gateway
+    ports:
+      - "80:8080" # Recebe na 80 do mundo e manda para 8080 interna
+    depends_on:
+      - java-engine
+      - php-core
+    networks:
+      - empire-net
+
+  # 2. O CÉREBRO (JAVA) - Protegido internamente
+  java-engine:
+    build: ./java-app
+    # Sem 'ports' expostas para o host
+    networks:
+      - empire-net
+    environment:
+      - DB_URL=jdbc:mysql://db:3306/empire_db
+    depends_on:
+      - db
+
+  # 3. O MOTOR WEB (PHP) - Protegido internamente
+  php-core:
+    build: ./php-app
+    networks:
+      - empire-net
+    depends_on:
+      - db
+
+  # 4. A VIGILÂNCIA/UHI (PYTHON) - Automação e Auditoria
+  python-worker:
+    build: ./python-scripts
+    networks:
+      - empire-net
+    volumes:
+      - ./logs:/var/log/empire # Compartilha logs para auditoria
+    depends_on:
+      - db
+
+  # 5. A FONTE DA VERDADE (MYSQL)
+  db:
+    image: mysql:8.0
+    networks:
+      - empire-net
+    environment:
+      MYSQL_ROOT_PASSWORD: password_seguro
+    # Apenas o Gateway e os outros serviços o enxergam pelo nome 'db'
+
+networks:
+  empire-net:
+    driver: bridge
