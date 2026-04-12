@@ -1,54 +1,56 @@
 version: '3.8'
 
 services:
-  # 1. O ESCUDO (GO) - Único com portas expostas
+  # GO GATEWAY
   gateway:
-    build: ./go-gateway
+    build: 
+      context: ..
+      dockerfile: deployments/Dockerfile.gateway
     ports:
-      - "80:8080" # Recebe na 80 do mundo e manda para 8080 interna
-    depends_on:
-      - java-engine
-      - php-core
-    networks:
-      - empire-net
-
-  # 2. O CÉREBRO (JAVA) - Protegido internamente
-  java-engine:
-    build: ./java-app
-    # Sem 'ports' expostas para o host
-    networks:
-      - empire-net
-    environment:
-      - DB_URL=jdbc:mysql://db:3306/empire_db
-    depends_on:
-      - db
-
-  # 3. O MOTOR WEB (PHP) - Protegido internamente
-  php-core:
-    build: ./php-app
-    networks:
-      - empire-net
-    depends_on:
-      - db
-
-  # 4. A VIGILÂNCIA/UHI (PYTHON) - Automação e Auditoria
-  python-worker:
-    build: ./python-scripts
+      - "80:8080"
     networks:
       - empire-net
     volumes:
-      - ./logs:/var/log/empire # Compartilha logs para auditoria
+      - ../logs:/app/logs
+
+  # JAVA SERVICE
+  java-engine:
+    build:
+      context: ../java-app
+      dockerfile: ../deployments/Dockerfile.java
+    networks:
+      - empire-net
     depends_on:
       - db
 
-  # 5. A FONTE DA VERDADE (MYSQL)
-  db:
-    image: mysql:8.0
+  # PHP SERVICE
+  php-core:
+    build:
+      context: ../php-app
+      dockerfile: ../deployments/Dockerfile.php
     networks:
       - empire-net
+
+  # PYTHON UHI
+  python-auditor:
+    build:
+      context: ../scripts/python-uhi
+      dockerfile: ../deployments/Dockerfile.python
+    volumes:
+      - ../logs:/app/logs:ro
+    networks:
+      - empire-net
+
+  # DATABASE
+  db:
+    image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: password_seguro
-    # Apenas o Gateway e os outros serviços o enxergam pelo nome 'db'
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: empire_db
+    volumes:
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - empire-net
 
 networks:
   empire-net:
