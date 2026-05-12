@@ -1,9 +1,10 @@
-# Go-Gateway Traffic Orchestrator
+#  LumeGateway: High-Velocity Traffic Orchestrator
 
 <div align="center">
 
 ![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![gRPC](https://img.shields.io/badge/gRPC-4285F4?style=for-the-badge&logo=grpc&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 ![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
@@ -16,41 +17,77 @@
 
 ## 🇧🇷 Versão em Português
 
-### 🏗️ Arquitetura Técnica
-O **Go-Gateway** é um Balanceador de Carga de Camada 7 e Agregador de Serviços especializado. Ele atua como o ponto de entrada resiliente para o meu ecossistema de microsserviços poliglota. Diferente de servidores convencionais, ele foi projetado para gerenciar o **Backpressure** entre clientes de alta velocidade e backends especializados (PHP, Java e Python), garantindo que o sistema não entre em colapso sob carga.
+### 🏗️ Arquitetura Técnica e Visão de Sistema
+O **LumeGateway** não é apenas um proxy; é um Orquestrador de Tráfego de Camada 7 projetado para ser o núcleo de sobrevivência de ecossistemas poliglotas. Ele foi concebido para resolver o problema crítico de **Backpressure** em arquiteturas distribuídas, atuando como um "amortecedor" inteligente entre o tráfego externo imprevisível e backends especializados (PHP, Java, Python). O Lume garante que cada microsserviço opere dentro de sua zona de eficiência, evitando degradação de performance por saturação de recursos.
 
-###  Conceitos de Engenharia Aplicados
+### 🧠 Conceitos de Engenharia de Elite Aplicados
 
-1. **Traffic Shaping Determinístico:**
-   - Utiliza o algoritmo **Token Bucket** para aplicar limites de taxa (Rate Limiting) por IP, protegendo os serviços internos contra exaustão de recursos e ataques de negação de serviço.
-2. **Isolamento de Falhas (Circuit Breaker):**
-   - Implementa uma máquina de estados que monitora taxas de erro. Se um serviço (ex: PHP-Core ou Java-Engine) falha, o Gateway intercepta as chamadas para evitar um colapso total em cascata.
-3. **I/O Não Bloqueante (Asynchronous Runtime):**
-   - Explora o **Scheduler** do Go para lidar com tarefas de rede. Cada requisição é tratada como uma Goroutine leve, permitindo escala horizontal com consumo de memória insignificante.
-4. **Sondagem Ativa de Saúde (Health Probing):**
-   - Um worker interno executa checagens de *Liveness* e *Readiness* periodicamente, atualizando dinamicamente a tabela de roteamento entre os containers Docker.
+1. **Traffic Shaping Determinístico (Token Bucket Algorithm):**
+   - Implementei o controle de vazão utilizando o algoritmo **Token Bucket**. Diferente do Window Counter simples, o Lume permite picos controlados de tráfego (*bursts*) enquanto mantém uma taxa média rigorosa por IP. Isso protege a infraestrutura contra ataques de força bruta e exaustão de conexões no nível da aplicação.
 
-###  Por que achei este projeto interessante?
-Este projeto me fascinou por estar na intersecção entre **Arquitetura de Software** e **Engenharia de Redes**. Ele integra tecnologias distintas (PHP, Java, Python, MySQL) em uma malha única. Enquanto os serviços individuais cuidam da lógica de negócio, este Gateway em Go cuida da **Sobrevivência do Sistema**, permitindo-me dominar a orquestração de sistemas distribuídos e alta concorrência.
+2. **Resiliência Adaptativa com Circuit Breaker:**
+   - O Gateway opera uma máquina de estados finitos (Open, Closed, Half-Open) para cada serviço upstream. Ao detectar anomalias ou latências fora do SLA (ex: falha no Java-Engine), o Lume "abre o circuito" instantaneamente. Isso isola a falha, impede que threads do Gateway fiquem presas aguardando respostas mortas e permite que o sistema se recupere sem intervenção manual.
+
+3. **Runtime de Alta Concorrência e Zero-Blocking I/O:**
+   - Explorando o **Scheduler preemptivo do Go**, o Lume trata cada requisição como uma Goroutine leve. A arquitetura utiliza buffers e canais para garantir que o processamento de rede nunca bloqueie a execução principal, permitindo escala horizontal massiva com um footprint de memória insignificante se comparado a soluções baseadas em threads tradicionais.
+
+4. **Service Discovery e Health Probing Ativo:**
+   - O Gateway mantém um worker interno de monitoramento que executa sondagens de *Liveness* (o serviço está vivo?) e *Readiness* (o serviço está pronto para tráfego?). Ele lê dinamicamente o estado da rede Docker, atualizando as tabelas de roteamento em memória sem a necessidade de restart, garantindo disponibilidade 99.9%.
+
+### 🏛️ Por que este projeto redefine meu perfil técnico?
+Este projeto representa o ápice da minha transição de "desenvolvedor de apps" para **Engenheiro de Sistemas**. O fascínio reside em dominar a camada invisível onde a lógica de negócio encontra a física da rede. No LumeGateway, eu não gerencio dados; eu gerencio a **entropia do sistema**, garantindo ordem e performance em um ambiente onde tecnologias distintas (PHP, Java, Python, Rust) precisam coexistir em harmonia e alta velocidade.
 
 ---
 
 ## 🇺🇸 English Version
 
-### 🏗️ Technical Architecture
-**Go-Gateway** is a specialized Layer 7 Load Balancer and Service Aggregator. It serves as the resilient entry point for my polyglot microservices ecosystem. Unlike standard servers, it is built to manage **Backpressure** between high-speed clients and specialized backend services (PHP, Java, and Python), preventing system collapse under heavy load.
+### 🏗️ Technical Architecture & System Vision
+**LumeGateway** is more than a proxy; it is a Layer 7 Traffic Orchestrator designed to be the survival core of polyglot ecosystems. It was conceived to solve the critical **Backpressure** problem in distributed architectures, acting as an intelligent "buffer" between unpredictable external traffic and specialized backends (PHP, Java, Python). Lume ensures that every microservice operates within its efficiency zone, preventing performance degradation due to resource saturation.
 
-###  Engineering Concepts Applied
+### 🧠 Elite Engineering Concepts Applied
 
-1. **Deterministic Traffic Shaping:**
-   - Uses a **Token Bucket** algorithm to enforce Rate Limiting per IP, protecting upstream services from resource exhaustion and DDoS attacks.
-2. **Failure Isolation (Circuit Breaker):**
-   - Implements a state-machine that monitors error rates. If a service (e.g., PHP-Core or Java-Engine) fails, the Gateway intercepts requests to prevent total cascading system failure.
-3. **Non-Blocking I/O (Asynchronous Runtime):**
-   - Leverages Go's **Scheduler** to handle I/O-bound tasks. Every incoming request is a lightweight Goroutine, allowing the system to scale horizontally with negligible memory footprint.
-4. **Active Health Probing:**
-   - An internal background worker periodically performs *Liveness* and *Readiness* checks, dynamically updating the routing table within the Docker network.
+1. **Deterministic Traffic Shaping (Token Bucket Algorithm):**
+   - Flow control is implemented via the **Token Bucket** algorithm. Unlike simple Window Counters, Lume allows for controlled bursts while maintaining a strict average rate per IP. This shields the infrastructure from brute-force attacks and application-level connection exhaustion.
 
-###  Why I found this fascinating
-This project sits at the intersection of **Software Architecture** and **Network Engineering**. It integrates diverse technologies (PHP, Java, Python, MySQL) into a single mesh. While individual services handle business logic, this Go Gateway handles **System Survival**, allowing me to master distributed system orchestration and high concurrency.
+2. **Adaptive Resilience with Circuit Breakers:**
+   - The Gateway operates a finite state machine (Open, Closed, Half-Open) for each upstream service. Upon detecting anomalies or latencies outside the SLA (e.g., a Java-Engine failure), Lume "trips the circuit" instantly. This isolates the fault, prevents Gateway threads from hanging on dead responses, and allows the system to recover without manual intervention.
 
+3. **High-Concurrency Runtime & Zero-Blocking I/O:**
+   - Leveraging **Go’s preemptive Scheduler**, Lume handles every request as a lightweight Goroutine. The architecture utilizes buffers and channels to ensure network processing never blocks the main execution, allowing massive horizontal scaling with a negligible memory footprint compared to traditional thread-based solutions.
+
+4. **Active Service Discovery & Health Probing:**
+   - An internal background worker performs periodic *Liveness* and *Readiness* checks. It dynamically monitors the Docker network state, updating in-memory routing tables in real-time without requiring restarts, ensuring 99.9% availability.
+
+### 🏛️ Why this project redefines my technical profile
+This project represents the peak of my transition from "app developer" to **Systems Engineer**. The fascination lies in mastering the invisible layer where business logic meets network physics. In LumeGateway, I don't just manage data; I manage **system entropy**, ensuring order and peak performance in an environment where diverse technologies (PHP, Java, Python, Rust) must coexist in harmony and high speed.
+
+---
+
+## 🛠️ Arsenal Técnico / Technical Arsenal
+
+| Recurso / Feature | Tecnologia / Tech | Objetivo / Goal |
+| :--- | :--- | :--- |
+| **Core Engine** | Go (Golang) | Concorrência nativa e performance de baixo nível. |
+| **Containerization** | Docker | Isolamento de serviços e portabilidade. |
+| **Flow Control** | Token Bucket | Rate Limiting e proteção contra DoS. |
+| **Resilience** | Circuit Breaker | Isolamento de falhas e prevenção de colapso em cascata. |
+| **Discovery** | Health Probing | Roteamento dinâmico e auto-correção. |
+
+---
+
+## 🤝 Contributing / Contribuindo
+
+Consulte o arquivo [CONTRIBUTING.md](CONTRIBUTING.md) para diretrizes de performance e submissão de código.
+
+---
+
+## 📂 Estrutura do Projeto / Project Structure
+
+```text
+.
+├── cmd/             # Application entry point (Main)
+├── internal/        # Core business logic (Rate Limiters, State Machines)
+├── pkg/             # Shared network utilities and middleware
+├── proto/           # gRPC & Protobuf interface definitions
+├── configs/         # Routing rules and threshold settings
+└── docker-compose.yml
